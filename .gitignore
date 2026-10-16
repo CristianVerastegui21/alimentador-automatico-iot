@@ -1,0 +1,24 @@
+# Credenciales
+.env
+.env.*
+!.env.example
+
+# Entorno virtual
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Datos locales
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos temporales
+.vscode/
+.idea/
+.DS_Store

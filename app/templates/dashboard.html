@@ -1,0 +1,410 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="csrf-token" content="{{ csrf }}">
+
+    <title>Dashboard | Alimentador IoT</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<!-- BARRA SUPERIOR -->
+<header class="topbar">
+
+    <div class="brand">
+        <span class="brand-mark">🐾</span>
+
+        <div>
+            <strong>Alimentador IoT</strong>
+            <small>Panel de control inteligente</small>
+        </div>
+    </div>
+
+    <form method="POST"
+          action="{{ url_for('main.logout') }}">
+
+        <input type="hidden"
+               name="csrf"
+               value="{{ csrf }}">
+
+        <button type="submit" class="outline">
+            Cerrar sesión
+        </button>
+    </form>
+
+</header>
+
+
+<main class="container">
+
+    <!-- ENCABEZADO -->
+    <section class="intro">
+
+        <div>
+            <p class="eyebrow">CENTRO DE CONTROL</p>
+
+            <h1>Alimentación inteligente</h1>
+
+            <p class="muted">
+                Supervisa el depósito y administra
+                la alimentación de tu mascota.
+            </p>
+        </div>
+
+        <span id="connection"
+              class="pill"
+              role="status"
+              aria-live="polite">
+            Consultando dispositivo...
+        </span>
+
+    </section>
+
+
+    <!-- NOTIFICACIONES -->
+    <div id="notice"
+         class="notice"
+         role="alert"
+         aria-live="polite"
+         hidden>
+    </div>
+
+
+    <!-- ESTADISTICAS -->
+    <section class="stats">
+
+        <!-- NIVEL DE ALIMENTO -->
+        <article class="card">
+
+            <span class="muted">
+                Nivel de alimento
+            </span>
+
+            <div class="big" id="level">
+                --%
+            </div>
+
+            <div class="progress"
+                 role="progressbar"
+                 aria-label="Nivel de alimento"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 aria-valuenow="0">
+
+                <div id="progress-fill"
+                     style="width:0%">
+                </div>
+            </div>
+
+            <small id="level-message" class="muted">
+                Esperando datos del sensor...
+            </small>
+
+        </article>
+
+
+        <!-- DISTANCIA -->
+        <article class="card">
+
+            <span class="muted">
+                Distancia del sensor
+            </span>
+
+            <div class="big" id="distance">
+                -- cm
+            </div>
+
+            <small class="muted">
+                Sensor HC-SR04 · Depósito de 20 cm
+            </small>
+
+        </article>
+
+
+        <!-- PROXIMA ALIMENTACION -->
+        <article class="card">
+
+            <span class="muted">
+                Próxima alimentación
+            </span>
+
+            <div class="big" id="next-feed">
+                --:--
+            </div>
+
+            <small class="muted">
+                Horario de Perú (UTC-5)
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <section class="layout">
+
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="stack">
+
+            <!-- ALIMENTACION MANUAL -->
+            <article class="card">
+
+                <div class="card-head">
+
+                    <div>
+                        <h2>Alimentación manual</h2>
+
+                        <p class="muted">
+                            Activa el dispensador desde
+                            tu celular o computadora.
+                        </p>
+                    </div>
+
+                    <span class="icon-circle">🍽️</span>
+
+                </div>
+
+                <button id="feed-button"
+                        type="button"
+                        class="primary large"
+                        disabled>
+
+                    Dar de comer ahora
+
+                </button>
+
+                <p class="hint">
+                    La alimentación solo se realizará
+                    si el ESP32 está conectado,
+                    el sensor funciona y existe
+                    alimento suficiente.
+                </p>
+
+                <div id="command-status"
+                     class="muted"
+                     role="status"
+                     aria-live="polite">
+                </div>
+
+            </article>
+
+
+            <!-- PROGRAMAR HORARIOS -->
+            <article class="card">
+
+                <div class="card-head">
+
+                    <div>
+                        <h2>Programar horarios</h2>
+
+                        <p class="muted">
+                            Configura cuándo recibirá
+                            alimento tu mascota.
+                        </p>
+                    </div>
+
+                    <span class="icon-circle">🕒</span>
+
+                </div>
+
+                <form id="schedule-form"
+                      class="schedule-form">
+
+                    <label>
+                        Hora
+
+                        <input type="time"
+                               name="time"
+                               id="schedule-time"
+                               value="08:00"
+                               required>
+                    </label>
+
+                    <label>
+                        Nombre
+
+                        <input type="text"
+                               name="label"
+                               id="schedule-label"
+                               maxlength="80"
+                               placeholder="Ej. Desayuno"
+                               required>
+                    </label>
+
+                    <button type="submit"
+                            class="primary"
+                            id="add-schedule">
+
+                        + Agregar
+
+                    </button>
+
+                </form>
+
+                <div id="schedules"
+                     class="schedule-list"
+                     aria-live="polite">
+
+                    <p class="muted">
+                        Cargando horarios...
+                    </p>
+
+                </div>
+
+            </article>
+
+        </div>
+
+
+        <!-- COLUMNA DERECHA -->
+        <div class="stack">
+
+            <!-- ESTADO ESP32 -->
+            <article class="card">
+
+                <div class="card-head">
+
+                    <div>
+                        <h2>Estado del dispositivo</h2>
+
+                        <p class="muted">
+                            Información recibida desde
+                            Wokwi o el ESP32 físico.
+                        </p>
+                    </div>
+
+                    <span class="icon-circle">📡</span>
+
+                </div>
+
+                <div class="detail">
+                    <span>Conexión</span>
+
+                    <strong id="device-online">
+                        Sin conexión
+                    </strong>
+                </div>
+
+                <div class="detail">
+                    <span>Estado</span>
+
+                    <strong id="device-status">
+                        Sin datos
+                    </strong>
+                </div>
+
+                <div class="detail">
+                    <span>Última señal</span>
+
+                    <strong id="last-seen">
+                        Nunca
+                    </strong>
+                </div>
+
+                <div class="detail">
+                    <span>Modo de alimentación</span>
+
+                    <strong id="feeding-mode">
+                        Automático
+                    </strong>
+                </div>
+
+            </article>
+
+
+            <!-- HISTORIAL -->
+            <article class="card">
+
+                <div class="card-head">
+
+                    <div>
+                        <h2>Historial de alimentación</h2>
+
+                        <p class="muted">
+                            Registro de alimentaciones
+                            manuales y automáticas.
+                        </p>
+                    </div>
+
+                    <span class="icon-circle">📋</span>
+
+                </div>
+
+                <div id="history"
+                     class="history"
+                     aria-live="polite">
+
+                    <p class="muted">
+                        Cargando historial...
+                    </p>
+
+                </div>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- PIE DE PAGINA -->
+    <footer>
+        Alimentador Inteligente IoT
+        · Flask · Supabase · ESP32
+    </footer>
+
+</main>
+
+
+<!-- CONFIRMACION DE ALIMENTACION MANUAL -->
+<dialog id="feed-dialog"
+        aria-labelledby="feed-dialog-title">
+
+    <div class="card">
+
+        <h2 id="feed-dialog-title">
+            Confirmar alimentación
+        </h2>
+
+        <p class="muted">
+            ¿Deseas enviar una orden para
+            dispensar alimento ahora?
+        </p>
+
+        <div class="dialog-actions">
+
+            <button id="cancel-feed"
+                    type="button"
+                    class="outline">
+                Cancelar
+            </button>
+
+            <button id="confirm-feed"
+                    type="button"
+                    class="primary">
+                Confirmar
+            </button>
+
+        </div>
+
+    </div>
+
+</dialog>
+
+
+<!-- JAVASCRIPT -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"
+        defer>
+</script>
+
+</body>
+</html>
