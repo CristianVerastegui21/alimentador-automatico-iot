@@ -10,7 +10,7 @@
 #include <Preferences.h>
 
 // EDITAR: URL pública HTTPS de Render. NO usar localhost desde Wokwi.
-const char* API_BASE = "https://TU-SERVICIO.onrender.com";
+const char* API_BASE = "https://alimentador-automatico-iot.onrender.com";
 // Debe coincidir con DEVICE_TOKEN en .env / Render.
 const char* DEVICE_TOKEN = "CAMBIAR_TOKEN_DISPOSITIVO_LARGO";
 const char* WIFI_SSID = "Wokwi-GUEST";
